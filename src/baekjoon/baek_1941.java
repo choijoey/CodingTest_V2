@@ -3,94 +3,81 @@ package baekjoon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.StringTokenizer;
+
+import java.util.*;
+
 
 public class baek_1941 {
-
-    static int ans;
-    static boolean[][] v;
     static char[][] map;
-
+    static int[] numbers;
+    static int ans;
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st;
 
-        v = new boolean[5][5];
         map = new char[5][5];
-        ans =0;
-
-        for(int i=0;i<5;i++){
-            map[i] = br.readLine().toCharArray();
-        }
-        ArrayList<int[]> list = new ArrayList<>();
+        numbers = new int[7];
+        ans = 0;
 
         for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
-                if(map[i][j] == 'S'){
-                    v[i][j] = true;
-                    list.add(new int[]{i,j});
-                    dfs(1,1,list);
-                    list.remove(0);
-                    v[i][j] =false;
-                }
-            }
+            map[i] = br.readLine().toCharArray();
         }
+
+        //25C7
+        combination(0,0);
         System.out.println(ans);
     }
 
-    static int[] dy = {1,1,0};
-    static int[] dx = {0,1,1};
-
-    public static void dfs(int cnt, int dasom ,ArrayList<int[]> list){
+    static public void combination(int cnt, int start){
         if(cnt == 7){
+            int[][] point = new int[7][2];
+            int[][] v = new int[5][5];
+            int sCnt = 0;
 
-//            for (int i = 0; i < 5; i++) {
-//                for (int j = 0; j < 5; j++) {
-//                    if(v[i][j])
-//                        System.out.print('O');
-//                    else
-//                        System.out.print('X');
-//                }
-//                System.out.println();
-//            }
-//            System.out.println(
-//            );
-//            System.out.println();
-            if(dasom < 4) {
-                return;
+            for (int i = 0; i < 7; i++) {
+                point[i][0] = numbers[i] /5;
+                point[i][1] = numbers[i] % 5;
+                v[point[i][0]][point[i][1]] = 1;
+                if(map[point[i][0]][point[i][1]] == 'S')
+                    sCnt++;
             }
 
-            ans++;
+
+            if(bfs(v,point[0]) && sCnt>=4)ans++;
+
             return;
         }
 
-        for(int j=0;j<list.size();j++){
-            int[] cur = list.get(j);
-            int y = cur[0];
-            int x = cur[0];
-
-            for (int i = 0; i < 3; i++) {
-                int ny = dy[i] + y;
-                int nx = dx[i] + x;
-
-                if(ny>=5||ny<0||nx>=5||nx<0){
-                    continue;
-                }
-                if(v[ny][nx]) continue;
-
-                v[ny][nx] = true;
-                list.add(new int[]{ny,nx});
-                if(map[ny][nx] == 'S')
-                    dfs(cnt+1,dasom+1,list);
-                else
-                    dfs(cnt+1,dasom,list);
-                list.remove(cnt-1);
-                v[ny][nx] = false;
-            }
+        for (int i = start; i < 25; i++) {
+            numbers[cnt] = i;
+            combination(cnt+1,i+1);
         }
 
-
     }
-}
+    static int[] dy = {1,-1,0,0};
+    static int[] dx = {0,0,1,-1};
+    static boolean bfs(int[][] v,int[] start){
+        Queue<int[]> queue = new LinkedList<>();
+        queue.offer(start);
+        v[start[0]][start[1]] = 2;
+        int cnt =1;
+
+        while (!queue.isEmpty()){
+            int[] cur = queue.poll();
+
+            for (int i = 0; i < 4; i++) {
+                int ny = cur[0] +dy[i];
+                int nx = cur[1] + dx[i];
+                if(ny<0||ny>=5||nx<0||nx>=5) continue;
+                if(v[ny][nx] != 1) continue;
+
+                queue.offer(new int[] { ny,nx});
+                v[ny][nx] = 2;
+                cnt++;
+
+            }
+        }
+        if(cnt == 7) return true;
+        return false;
+    }
+    }
